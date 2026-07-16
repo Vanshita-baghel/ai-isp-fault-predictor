@@ -1,18 +1,22 @@
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
+from utils.data_loader import load_data
+from utils.report_utils import save_csv
+from utils.plotting import save_plot
 
-df= pd.read_csv("data/network_metrics.csv")
-df["timestamp"]= pd.to_datetime(df["timestamp"])
-print(df["timestamp"].dtype)
+df= load_data()
+
 INTERFACE_CAPACITY= 1000    # assumption
 df["bandwidth_utilization"]= (df["bandwidth_mbps"]/INTERFACE_CAPACITY)*100
 
-bandwidth_stats= df.groupby("node_id")["bandwidth_utilization"].agg(["mean", "min", "max"]).round(2)
+bandwidth_stats= df.groupby("node_id")["bandwidth_utilization"].agg(mean_bandwidth="mean",
+          max_bandwidth="max",
+          min_bandwidth="min").round(2)
 
 print(bandwidth_stats)
 
-congested= bandwidth_stats[bandwidth_stats["mean"]>80]
+congested= bandwidth_stats[bandwidth_stats["mean_bandwidth"]>80]
 print(congested)
 
 peak= df.loc[df["bandwidth_utilization"].idxmax()]
@@ -21,28 +25,31 @@ print(f"peak - {peak}")
 router= "R01"
 router_df= df[df["node_id"]==router]
 
-plt.figure(figsize=(12,5))
+save_plot(router_df["timestamp"], router_df["bandwidth_utilization"], f"Bandwidth Utilization - {router}", "Time", "Utilization (%)", f"{router}_bandwidth.png" )
 
-plt.plot(router_df["timestamp"], router_df["bandwidth_utilization"])
+# plt.figure(figsize=(12,5))
 
-plt.title(f"Bandwidth Utilization - {router}")
+# plt.plot(router_df["timestamp"], router_df["bandwidth_utilization"])
 
-plt.ylabel("Utilization (%)")
+# plt.title(f"Bandwidth Utilization - {router}")
 
-plt.xlabel("Time")
+# plt.ylabel("Utilization (%)")
 
-plt.grid(True)
+# plt.xlabel("Time")
 
-plt.show()
+# plt.grid(True)
 
-plt.savefig(
-    f"reports/plots/{router}_bandwidth.png"
-)
+# plt.show()
 
-plt.close()
+# plt.savefig(
+#     f"reports/plots/{router}_bandwidth.png"
+# )
+
+# plt.close()
 
 
-bandwidth_stats.reset_index().to_csv(
-    "reports/bandwidth_summary.csv",
-    index=False
-)
+# bandwidth_stats.reset_index().to_csv(
+#     "reports/bandwidth_summary.csv",
+#     index=False
+# )
+save_csv(df, "bandwidth_summary.csv")

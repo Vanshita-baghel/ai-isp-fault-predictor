@@ -2,9 +2,12 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from utils.data_loader import load_data
+from utils.report_utils import save_csv
+from utils.plotting import save_plot
 
-df = pd.read_csv("data/network_metrics_clean.csv")
-df["timestamp"] = pd.to_datetime(df["timestamp"])
+
+df= load_data()
 
 np.random.seed(42)
 
@@ -48,33 +51,36 @@ router = "R01"
 
 router_df = df[df["node_id"] == router]
 
-plt.figure(figsize=(12,5))
+save_plot(router_df["timestamp"], router_df["latency_ms"], f"Latency - {router}", "Time", "Latency (ms)", f"{router}_latency.png")
 
-plt.plot(
-    router_df["timestamp"],
-    router_df["latency_ms"]
-)
+# plt.figure(figsize=(12,5))
 
-plt.title(f"Latency - {router}")
+# plt.plot(
+#     router_df["timestamp"],
+#     router_df["latency_ms"]
+# )
 
-plt.xlabel("Time")
+# plt.title(f"Latency - {router}")
 
-plt.ylabel("Latency (ms)")
+# plt.xlabel("Time")
 
-plt.grid(True)
+# plt.ylabel("Latency (ms)")
 
-plt.savefig(
-    f"reports/plots/{router}_latency.png"
-)
+# plt.grid(True)
 
-plt.show()
+# plt.savefig(
+#     f"reports/plots/{router}_latency.png"
+# )
+
+# plt.show()
 
 latency_stats.reset_index().to_csv(
     "reports/latency_summary.csv",
     index=False
 )
 
-df.to_csv(
-    "data/network_metrics_clean.csv",
-    index=False
-)
+# df.to_csv(
+#     "data/network_metrics_clean.csv",
+#     index=False
+# )
+save_csv(df, "network_metrics_clean.csv")

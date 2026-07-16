@@ -9,13 +9,17 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+from utils.data_loader import load_data
+from utils.report_utils import save_csv
+from utils.plotting import save_plot
 
-df= pd.read_csv("data/network_metrics.csv")
-df["timestamp"]= pd.to_datetime(df["timestamp"])
-print(df["timestamp"].dtype)
 
-cpu_stats= df.groupby("node_id")["cpu_utilization"].agg(["mean", "min", "max"]).round(2)
-memory_stats= df.groupby("node_id")["memory_utilization"].agg(["mean", "min", "max"])
+df= load_data()
+
+cpu_stats= df.groupby("node_id")["cpu_utilization"].agg(mean_cpu="mean", max_cpu="max", min_cpu="min").round(2)
+memory_stats= df.groupby("node_id")["memory_utilization"].agg(mean_memory="mean",
+          max_memory="max",
+          min_memory="min")
 
 report= cpu_stats.join(memory_stats, lsuffix="_cpu", rsuffix="_memory")
 
@@ -31,42 +35,45 @@ print(f"high usage memory:\n {high_mem}")
 router="R01"
 router_df= df[df["node_id"]==router]
 
-os.makedirs("reports/plots", exist_ok=True)
+save_plot(router_df["timestamp"], router_df["cpu_utilization"], "CPU_UTILIZATION", "time", "CPU_UTILIZATION", f"{router}_cpu.png" )
 
-plt.figure(figsize=(12,5))
-plt.plot(router_df["timestamp"], router_df["cpu_utilization"])
+# os.makedirs("reports/plots", exist_ok=True)
 
-plt.xlabel("time")
-plt.ylabel("cpu(%)")
+# plt.figure(figsize=(12,5))
+# plt.plot(router_df["timestamp"], router_df["cpu_utilization"])
 
-plt.grid(True)
+# plt.xlabel("time")
+# plt.ylabel("cpu(%)")
 
-plt.title("CPU_UTILIZATION")
+# plt.grid(True)
 
-plt.savefig(f"reports/plots/{router}_cpu.png")
+# plt.title("CPU_UTILIZATION")
 
-plt.show()
+# plt.savefig(f"reports/plots/{router}_cpu.png")
+
+# plt.show()
 
 
 #plot memory utilization
-plt.figure(figsize=(12,5))
-plt.plot(router_df["timestamp"], router_df["memory_utilization"])
+save_plot(router_df["timestamp"], router_df["memory_utilization"], f"MEMORY_UTILIZATION - {router}","time","memory(%)", f"{router}_memory.png"  )
+# plt.figure(figsize=(12,5))
+# plt.plot(router_df["timestamp"], router_df["memory_utilization"])
 
-plt.xlabel("time")
-plt.ylabel("memory(%)")
+# plt.xlabel("time")
+# plt.ylabel("memory(%)")
 
-plt.grid(True)
+# plt.grid(True)
 
-plt.title(f"MEMORY_UTILIZATION - {router}" )
+# plt.title(f"MEMORY_UTILIZATION - {router}" )
 
-plt.savefig(f"reports/plots/{router}_memory.png")
-
-
-plt.show()
+# plt.savefig(f"reports/plots/{router}_memory.png")
 
 
-report.to_csv("reports/cpu_memory_summary.csv")
+# plt.show()
 
+#save report as csv file
+# report.to_csv("reports/cpu_memory_summary.csv")
+save_csv(df, "cpu_memory_summary.csv")
 
 
 
