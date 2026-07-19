@@ -1,0 +1,6 @@
+node_id,avg_failure_probability,failures
+R01,11.32,37
+R02,11.24,39
+R03,11.26,33
+R04,11.35,38
+R05,11.22,26
